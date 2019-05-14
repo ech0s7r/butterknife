@@ -3,18 +3,21 @@ Butter Knife
 
 ![Logo](website/static/logo.png)
 
-View "injection" library for Android which uses annotation processing to generate boilerplate code
-for you.
+Field and method binding for Android views which uses annotation processing to generate boilerplate
+code for you.
 
- * Eliminate `findViewById` calls by using `@InjectView` on fields.
- * Group multiple views in a list using `@InjectViews`. Operate on all of them at once with actions,
+ * Eliminate `findViewById` calls by using `@BindView` on fields.
+ * Group multiple views in a list or array. Operate on all of them at once with actions,
    setters, or properties.
  * Eliminate anonymous inner-classes for listeners by annotating methods with `@OnClick` and others.
+ * Eliminate resource lookups by using resource annotations on fields.
 
 ```java
 class ExampleActivity extends Activity {
-  @InjectView(R.id.user) EditText username;
-  @InjectView(R.id.pass) EditText password;
+  @BindView(R.id.user) EditText username;
+  @BindView(R.id.pass) EditText password;
+
+  @BindString(R.string.login_error) String loginErrorMessage;
 
   @OnClick(R.id.submit) void submit() {
     // TODO call server...
@@ -23,8 +26,8 @@ class ExampleActivity extends Activity {
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.simple_activity);
-    ButterKnife.inject(this);
-    // TODO Use "injected" views...
+    ButterKnife.bind(this);
+    // TODO Use fields...
   }
 }
 ```
@@ -38,18 +41,62 @@ __Remember: A butter knife is like [a dagger][1] only infinitely less sharp.__
 Download
 --------
 
-Download [the latest JAR][2] or grab via Maven:
-```xml
-<dependency>
-  <groupId>com.jakewharton</groupId>
-  <artifactId>butterknife</artifactId>
-  <version>5.1.2</version>
-</dependency>
-```
-or Gradle:
 ```groovy
-compile 'com.jakewharton:butterknife:5.1.2'
+android {
+  ...
+  // Butterknife requires Java 8.
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+}
+
+dependencies {
+  implementation 'com.jakewharton:butterknife:10.1.0'
+  annotationProcessor 'com.jakewharton:butterknife-compiler:10.1.0'
+}
 ```
+
+If you are using Kotlin, replace `annotationProcessor` with `kapt`.
+
+Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
+
+
+
+Library projects
+--------------------
+
+To use Butter Knife in a library, add the plugin to your `buildscript`:
+
+```groovy
+buildscript {
+  repositories {
+    mavenCentral()
+    google()
+   }
+  dependencies {
+    classpath 'com.jakewharton:butterknife-gradle-plugin:10.1.0'
+  }
+}
+```
+
+and then apply it in your module:
+
+```groovy
+apply plugin: 'com.android.library'
+apply plugin: 'com.jakewharton.butterknife'
+```
+
+Now make sure you use `R2` instead of `R` inside all Butter Knife annotations.
+
+```java
+class ExampleActivity extends Activity {
+  @BindView(R2.id.user) EditText username;
+  @BindView(R2.id.pass) EditText password;
+...
+}
+```
+
 
 
 License
@@ -72,5 +119,6 @@ License
 
 
  [1]: http://square.github.com/dagger/
- [2]: http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.jakewharton&a=butterknife&v=LATEST
+ [2]: https://search.maven.org/remote_content?g=com.jakewharton&a=butterknife&v=LATEST
  [3]: http://jakewharton.github.com/butterknife/
+ [snap]: https://oss.sonatype.org/content/repositories/snapshots/
